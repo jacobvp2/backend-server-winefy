@@ -6,6 +6,8 @@ from scipy import stats
 import pandas as pd
 import numpy as np
 
+import boto3
+
 maxlen = 1500
 per_types = ['ENFJ','ENFP','ENTJ','ENTP','ESFJ','ESFP','ESTJ','ESTP','INFJ','INFP','INTJ','INTP','ISFJ','ISFP','ISTJ','ISTP']
 
@@ -33,8 +35,15 @@ def recreate_model():
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     model.compile(loss='categorical_crossentropy', optimizer=tf.keras.optimizers.Adam(
     learning_rate=0.00001), metrics=['accuracy'])
-    model.load_weights("models/bert_base_model.h5")
+    # model.load_weights("models/bert_base_model.h5")
+    client_s3 = boto3.client("s3",aws_access_key_id='AKIA4YCQ33EPQHEJLAOO',
+         aws_secret_access_key= '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')
+    result = client_s3.download_file("winefy-backend-bucket",'bert_base_model.h5', "/tmp/models.h5")
+    model.load_weights("/tmp/models.h5")
     return model
+
+# result = client_s3.download_file("winefy-backend-bucket",'bert_base_model.h5', "/tmp/models.h5")
+# model = load_weights("/tmp/day/model.h5")
 
 new_model = recreate_model()
 tokenizer = transformers.AutoTokenizer.from_pretrained('bert-base-uncased')
